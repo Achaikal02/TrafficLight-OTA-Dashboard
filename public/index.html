@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>OTA Dashboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0f172a;
+      color: white;
+      text-align: center;
+      padding: 50px;
+    }
+
+    .card {
+      background: #1e293b;
+      padding: 30px;
+      border-radius: 15px;
+      width: 400px;
+      margin: auto;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+
+    h2 {
+      color: #38bdf8;
+      margin-bottom: 20px;
+    }
+
+    input[type="file"] {
+      margin: 10px;
+    }
+
+    button {
+      padding: 10px 20px;
+      background: #22c55e;
+      border: none;
+      border-radius: 8px;
+      color: white;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      background: #16a34a;
+    }
+
+    #status {
+      margin-top: 15px;
+      font-weight: bold;
+    }
+
+    .progress-bar {
+      width: 100%;
+      background: #334155;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-top: 15px;
+      height: 20px;
+    }
+
+    .progress {
+      height: 100%;
+      width: 0%;
+      background: #38bdf8;
+      transition: width 0.3s;
+    }
+
+    .file-info {
+      font-size: 12px;
+      color: #94a3b8;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="card">
+  <h2>🚀 OTA Firmware Upload</h2>
+
+  <input type="file" id="file" onchange="showFileInfo()"><br>
+  <div class="file-info" id="fileInfo"></div>
+
+  <!-- Tambah di dalam card, sebelum button -->
+  <input type="text" id="version" placeholder="Versi firmware (contoh: 2.0)" 
+  style="padding:8px;border-radius:8px;border:none;margin:10px;width:80%;text-align:center;">
+
+  <button onclick="upload()">Upload Firmware</button>
+
+  <div class="progress-bar">
+    <div class="progress" id="progress"></div>
+  </div>
+
+  <p id="status">Belum upload</p>
+</div>
+
+<script>
+
+const SERVER_URL = "";
+
+function showFileInfo() {
+  let file = document.getElementById("file").files[0];
+
+  if (file) {
+    document.getElementById("fileInfo").innerText =
+      "File: " + file.name + " (" + (file.size/1024).toFixed(2) + " KB)";
+  }
+}
+
+async function upload() {
+  let file = document.getElementById("file").files[0];
+  let version = document.getElementById("version").value;
+
+  if (!file) {
+    alert("Pilih file dulu!");
+    return;
+  }
+
+  if (!version) {
+    alert("Isi versi firmware dulu!");
+    return;
+  }
+
+  let formData = new FormData();
+  formData.append("file", file);
+
+  document.getElementById("status").innerText = "Uploading...";
+  document.getElementById("progress").style.width = "0%";
+
+  try {
+    const response = await fetch(SERVER_URL + "/upload", {
+      method: "POST",
+      body: formData,
+      headers: {
+        "ngrok-skip-browser-warning": "69420",
+        "x-firmware-version": version  // ✅ kirim versi ke server
+      }
+    });
+
+    if (response.ok) {
+      document.getElementById("progress").style.width = "100%";
+      document.getElementById("status").innerText =
+        "✅ Upload berhasil! Versi: " + version + " 🚀";
+    } else {
+      document.getElementById("status").innerText =
+        "❌ Upload gagal!";
+    }
+
+  } catch (error) {
+    document.getElementById("status").innerText =
+      "❌ Error koneksi ke server!";
+    console.error(error);
+  }
+}
+
+</script>
+
+</body>
+</html>
